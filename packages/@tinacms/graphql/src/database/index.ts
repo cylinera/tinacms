@@ -107,12 +107,16 @@ export type CreateDatabase = Omit<
 export type CreateLocalDatabaseArgs = Omit<DatabaseArgs, 'level'> & {
   port?: number
   rootPath?: string
+  contentRootPath?: string
 }
 
 export const createLocalDatabase = (config?: CreateLocalDatabaseArgs) => {
   const level = new TinaLevelClient(config?.port)
   level.openConnection()
-  const fsBridge = new FilesystemBridge(config?.rootPath || process.cwd())
+  const fsBridge = new FilesystemBridge(
+    config?.rootPath || process.cwd(),
+    config?.contentRootPath
+  )
   return new Database({
     bridge: fsBridge,
     ...(config || {}),
