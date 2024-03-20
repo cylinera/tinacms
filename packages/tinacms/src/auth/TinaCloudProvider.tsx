@@ -500,7 +500,7 @@ export const TinaCloudProvider = (
   }, [isTinaCloud, cms])
 
   return (
-    <SessionProvider basePath="/api/tina/auth">
+    <SessionProvider basePath="/api/content/auth">
       <BranchDataProvider
         currentBranch={currentBranch}
         setCurrentBranch={(b) => {

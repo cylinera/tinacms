@@ -88,7 +88,7 @@ export class UsernamePasswordAuthJSProvider extends DefaultAuthJSProvider {
     }
     const csrfToken = await getCsrfToken()
     // TODO make api baseUrl configurable
-    return fetch('/api/tina/auth/callback/credentials', {
+    return fetch('/api/content/auth/callback/credentials', {
       redirect: 'error', //redirect should throw an error
       method: 'POST',
       headers: {
@@ -139,7 +139,7 @@ export const TinaUserCollection: Collection = {
   isDetached: true,
   label: 'Users',
   name: 'user',
-  path: 'content/users',
+  path: 'users',
   format: 'json',
   fields: [
     {

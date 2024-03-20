@@ -46,3 +46,4 @@ dist/**
 **/**/.env
 # All .env files
 **/.env
+.history

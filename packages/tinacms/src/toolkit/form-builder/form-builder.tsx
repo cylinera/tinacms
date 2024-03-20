@@ -275,8 +275,30 @@ export const FormBuilder: FC<FormBuilderProps> = ({
 }
 
 export const FormStatus = ({ pristine }) => {
+  const [submitting, setSubmitting] = React.useState(false)
   return (
     <div className="flex flex-0 items-center">
+      <Button
+        onClick={async () => {
+          setSubmitting(true)
+          try {
+            await fetch('/api/content/publish', {
+              method: 'POST',
+            })
+          } finally {
+            setSubmitting(false)
+          }
+        }}
+        disabled={submitting}
+        busy={submitting}
+        variant="primary"
+        size="small"
+        className="mr-4"
+        style={{ width: 100 }}
+      >
+        {submitting && <LoadingDots />}
+        {!submitting && 'Publish'}
+      </Button>
       {!pristine && (
         <>
           <span className="w-3 h-3 flex-0 rounded-full bg-yellow-300 border border-yellow-400 mr-2"></span>{' '}
