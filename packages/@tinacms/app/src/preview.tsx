@@ -14,6 +14,13 @@ export const Preview = (
   }
 ) => {
   useGraphQLReducer(props.iframeRef, props.url)
+  let url = props.url
+  if (url) {
+    const urlObj = new URL(url, location.origin)
+    urlObj.pathname = '/api/draft'
+    urlObj.searchParams.set('url', location.origin + props.url)
+    url = urlObj.toString()
+  }
 
   return (
     <iframe
@@ -21,7 +28,7 @@ export const Preview = (
       id="tina-iframe"
       ref={props.iframeRef}
       className="h-screen w-full bg-white"
-      src={props.url}
+      src={url}
     />
   )
 }
