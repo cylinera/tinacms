@@ -105,6 +105,7 @@ export const createConfig = async ({
   plugins = [],
   noWatch,
   rollupOptions,
+  sourcemap,
 }: {
   configManager: ConfigManager
   database: Database
@@ -112,6 +113,7 @@ export const createConfig = async ({
   noWatch: boolean
   plugins?: Plugin[]
   rollupOptions?: BuildOptions['rollupOptions']
+  sourcemap?: boolean
 }) => {
   // TODO: make this configurable
   const publicEnv: Record<string, string> = {}
@@ -233,7 +235,7 @@ export const createConfig = async ({
       },
     },
     build: {
-      sourcemap: false,
+      sourcemap: sourcemap || false,
       outDir: configManager.outputFolderPath,
       emptyOutDir: true,
       rollupOptions: rollupOptions,

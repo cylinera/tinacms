@@ -39,6 +39,7 @@ export const createDevServer = async (
       rollupOptions: {
         input: configManager.spaMainPath,
       },
+      sourcemap: true,
     })
   )
 }
