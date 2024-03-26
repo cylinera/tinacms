@@ -43,7 +43,17 @@ export const ImageField = wrapFieldsWithMeta<InputProps, ImageProps>(
         props.input.onChange(parsedValue)
       }
     }
-    const uploadDir = props.field.uploadDir || (() => '')
+    const uploadDir =
+      props.field.uploadDir ||
+      (() => {
+        if (src) {
+          return decodeURIComponent(new URL(src).pathname)
+            .split('/')
+            .slice(2, -1)
+            .join('/')
+        }
+        return ''
+      })
 
     return (
       <ImageUpload
