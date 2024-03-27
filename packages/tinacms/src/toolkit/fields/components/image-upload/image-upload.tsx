@@ -12,6 +12,7 @@ import {
   DEFAULT_MEDIA_UPLOAD_TYPES,
   dropzoneAcceptFromString,
   isImage,
+  isVideo,
 } from '@toolkit/components/media/utils'
 import { BiFileBlank } from 'react-icons/bi'
 
@@ -35,6 +36,18 @@ export const StyledImage = ({ src }) => {
       className={`block max-w-full rounded shadow overflow-hidden max-h-48 lg:max-h-64 h-auto object-contain transition-opacity duration-100 ease-out m-0 bg-gray-200 bg-auto bg-center bg-no-repeat ${
         isSvg ? 'min-w-[12rem]' : ''
       }`}
+    />
+  )
+}
+
+export const StyledVideo = ({ src }) => {
+  return (
+    <video
+      className="block max-w-full rounded shadow overflow-hidden max-h-48 lg:max-h-64 h-auto object-contain transition-opacity duration-100 ease-out m-0 bg-gray-200 bg-auto bg-center bg-no-repeat"
+      src={src}
+      muted
+      autoPlay
+      loop
     />
   )
 }
@@ -83,6 +96,8 @@ export const ImageUpload = React.forwardRef<
             >
               {isImage(src) ? (
                 <StyledImage src={src} />
+              ) : isVideo(src) ? (
+                <StyledVideo src={src} />
               ) : (
                 <StyledFile src={src} />
               )}

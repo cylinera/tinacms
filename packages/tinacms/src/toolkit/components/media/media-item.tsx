@@ -1,7 +1,7 @@
 import React from 'react'
 import { Media } from '@toolkit/core'
 import { BiFolder, BiFile } from 'react-icons/bi'
-import { isImage } from './utils'
+import { isImage, isVideo } from './utils'
 
 interface MediaItemProps {
   item: Media & { new?: boolean }
@@ -38,6 +38,14 @@ export function ListMediaItem({ item, onClick, active }: MediaItemProps) {
             className="object-contain object-center w-full h-full origin-center transition-all duration-150 ease-out group-hover:scale-110"
             src={thumbnail}
             alt={item.filename}
+          />
+        ) : isVideo(thumbnail) ? (
+          <video
+            className="object-contain object-center w-full h-full origin-center transition-all duration-150 ease-out group-hover:scale-110"
+            src={thumbnail}
+            muted
+            autoPlay
+            loop
           />
         ) : (
           <FileIcon className="w-1/2 h-full fill-gray-300" />
@@ -83,6 +91,14 @@ export function GridMediaItem({ item, active, onClick }: MediaItemProps) {
             className="object-contain object-center w-full h-full"
             src={thumbnail}
             alt={item.filename}
+          />
+        ) : isVideo(thumbnail) ? (
+          <video
+            className="object-contain object-center w-full h-full"
+            src={thumbnail}
+            muted
+            autoPlay
+            loop
           />
         ) : (
           <div className="p-4 w-full flex flex-col gap-4 items-center justify-center">

@@ -33,6 +33,7 @@ import {
   DEFAULT_MEDIA_UPLOAD_TYPES,
   dropzoneAcceptFromString,
   isImage,
+  isVideo,
 } from './utils'
 import { DeleteModal, NewFolderModal } from './modal'
 import { CopyField } from './copy-field'
@@ -510,6 +511,16 @@ const ActiveItemPreview = ({
                 className="block border border-gray-100 rounded-md overflow-hidden object-center object-contain max-w-full max-h-full m-auto shadow"
                 src={thumbnail}
                 alt={activeItem.filename}
+              />
+            </div>
+          ) : isVideo(thumbnail) ? (
+            <div className="w-full max-h-[75%]">
+              <video
+                className="block border border-gray-100 rounded-md overflow-hidden object-center object-contain max-w-full max-h-full m-auto shadow"
+                src={thumbnail}
+                muted
+                autoPlay
+                loop
               />
             </div>
           ) : (
