@@ -275,29 +275,103 @@ export const FormBuilder: FC<FormBuilderProps> = ({
 }
 
 export const FormStatus = ({ pristine }) => {
+  const cms = useCMS()
+  const [loading, setLoading] = React.useState(false)
   const [submitting, setSubmitting] = React.useState(false)
+  const [publishModalOpen, setPublishModalOpen] = React.useState(false)
+  const [publishData, setPublishData] = React.useState({
+    updated: [],
+    deleted: [],
+  })
   return (
     <div className="flex flex-0 items-center">
+      {publishModalOpen && (
+        <Modal>
+          <PopupModal>
+            <ModalHeader close={() => setPublishModalOpen(false)}>
+              Publish Content
+            </ModalHeader>
+            <ModalBody padded={true}>
+              {publishData.updated.length > 0 && (
+                <>
+                  <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+                    Content will be added or updated:
+                  </h2>
+                  <ul className="max-w-md space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
+                    {publishData.updated.map((file) => (
+                      <li>{file}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {publishData.updated.length > 0 &&
+                publishData.deleted.length > 0 && (
+                  <hr className="h-px my-4 bg-gray-200 border-0 dark:bg-gray-700" />
+                )}
+              {publishData.deleted.length > 0 && (
+                <>
+                  <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+                    Content will be deleted:
+                  </h2>
+                  <ul className="max-w-md space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400">
+                    {publishData.deleted.map((file) => (
+                      <li>{file}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </ModalBody>
+            <ModalActions>
+              <Button
+                style={{ flexGrow: 2 }}
+                onClick={() => setPublishModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                style={{ flexGrow: 3 }}
+                variant="primary"
+                onClick={async () => {
+                  setPublishModalOpen(false)
+                  setSubmitting(true)
+                  try {
+                    await fetch('/api/content/publish', { method: 'POST' })
+                  } finally {
+                    setSubmitting(false)
+                  }
+                }}
+              >
+                Confirm
+              </Button>
+            </ModalActions>
+          </PopupModal>
+        </Modal>
+      )}
       <Button
         onClick={async () => {
-          setSubmitting(true)
+          setLoading(true)
           try {
-            await fetch('/api/content/publish', {
-              method: 'POST',
-            })
+            const resp = await fetch('/api/content/publish', { method: 'GET' })
+            const data = await resp.json()
+            if (data.updated.length || data.deleted.length) {
+              setPublishData(data)
+              setPublishModalOpen(true)
+            } else {
+              cms.alerts.error('No content to publish.')
+            }
           } finally {
-            setSubmitting(false)
+            setLoading(false)
           }
         }}
-        disabled={submitting}
-        busy={submitting}
+        disabled={loading || submitting}
+        busy={loading || submitting}
         variant="primary"
         size="small"
         className="mr-4"
         style={{ width: 100 }}
       >
-        {submitting && <LoadingDots />}
-        {!submitting && 'Publish'}
+        {(loading || submitting) && <LoadingDots />}
+        {!(loading || submitting) && 'Publish'}
       </Button>
       {!pristine && (
         <>
