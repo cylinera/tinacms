@@ -210,10 +210,10 @@ export class Database {
   public contentLevel: Level | undefined
   public tinaDirectory: string
   public indexStatusCallback: IndexStatusCallback | undefined
+  public contentNamespace: string | undefined
   private readonly onPut: OnPutCallback
   private readonly onDelete: OnDeleteCallback
   private tinaSchema: TinaSchema | undefined
-  private contentNamespace: string | undefined
 
   private collectionIndexDefinitions:
     | Record<string, Record<string, IndexDefinition>>

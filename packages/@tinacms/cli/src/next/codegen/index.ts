@@ -268,13 +268,13 @@ export class Codegen {
       })
     }
     return `// @ts-nocheck
-import { resolve } from "@tinacms/datalayer";
+import { Database, resolve } from "@tinacms/datalayer";
 import type { TinaClient } from "tinacms/dist/client";
 
 import { queries } from "./types";
 import database from "../database";
 
-export async function databaseRequest({ query, variables, user }) {
+export async function databaseRequest({ query, variables, user, database }) {
   const result = await resolve({
     config: {
       useRelativeMedia: true,
@@ -289,43 +289,47 @@ export async function databaseRequest({ query, variables, user }) {
   return result;
 }
 
-export async function authenticate({ username, password }) {
-    return databaseRequest({
-      query: \`query auth($username:String!, $password:String!) {
-              authenticate(sub:$username, password:$password) {
-               ${authFields.join(' ')}
-              }
-            }\`,
-      variables: { username, password },
-    })
-}
-
-export async function authorize(user: { sub: string }) {
-  return databaseRequest({
-    query: \`query authz { authorize { ${authFields.join(' ')}} }\`,
-    variables: {},
-    user
-  })
-}
-
-function createDatabaseClient<GenQueries = Record<string, unknown>>({
+export function createDatabaseClient<GenQueries = Record<string, unknown>>({
   queries,
+  database,
 }: {
   queries: (client: {
     request: TinaClient<GenQueries>["request"];
   }) => GenQueries;
+  database: Database;
 }) {
   const request = async ({ query, variables, user }) => {
-    const data = await databaseRequest({ query, variables, user });
-    return { data: data.data as any, query, variables, errors: data.errors || null };
+    const data = await databaseRequest({ query, variables, user, database });
+    return {
+      data: data.data as any,
+      query,
+      variables,
+      errors: data.errors || null,
+    };
   };
-  const q = queries({
-    request,
-  });
-  return { queries: q, request, authenticate, authorize };
+  const authenticate = ({ username, password }) => {
+    return databaseRequest({
+      query: \`query auth($username:String!, $password:String!) {
+              authenticate(sub:$username, password:$password) {
+                id:username name email _password: password { passwordChangeRequired }
+              }
+            }\`,
+      variables: { username, password },
+      database,
+    });
+  };
+  const authorize = (user: { sub: string }) => {
+    return databaseRequest({
+      query: \`query authz { authorize { id:username name email _password: password { passwordChangeRequired }} }\`,
+      variables: {},
+      user,
+      database,
+    });
+  };
+  return { queries: queries({ request }), request, authenticate, authorize };
 }
 
-export const databaseClient = createDatabaseClient({ queries });
+export const databaseClient = createDatabaseClient({ queries, database });
 
 export const client = databaseClient;
 

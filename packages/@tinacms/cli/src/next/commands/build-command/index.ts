@@ -87,10 +87,10 @@ export class BuildCommand extends BaseCommand {
     let server: ViteDevServer | undefined
     // Initialize the host TCP server
     createDBServer(Number(this.datalayerPort))
-    const database = await createAndInitializeDatabase(
+    const database = await createAndInitializeDatabase({
       configManager,
-      Number(this.datalayerPort)
-    )
+      datalayerPort: Number(this.datalayerPort),
+    })
 
     const { queryDoc, fragDoc, graphQLSchema, tinaSchema, lookup } =
       await buildSchema(configManager.config)
@@ -112,13 +112,30 @@ export class BuildCommand extends BaseCommand {
       (configManager.hasSelfHostedConfig() || this.localOption) &&
       !this.skipIndexing
     ) {
-      // if we are building locally use the default spinner text
-      const text = this.localOption
-        ? undefined
-        : 'Indexing to self-hosted data layer'
       try {
+        if (configManager.selfHostedPreviewDatabaseFilePath) {
+          const previewDatabase = await createAndInitializeDatabase({
+            configManager,
+            datalayerPort: Number(this.datalayerPort),
+            preview: true,
+          })
+          await this.indexContentWithSpinner({
+            // if we are building locally use the default spinner text
+            text: this.localOption
+              ? undefined
+              : 'Indexing to self-hosted preview data layer',
+            database: previewDatabase,
+            graphQLSchema,
+            tinaSchema,
+            configManager,
+            partialReindex: this.partialReindex,
+          })
+        }
         await this.indexContentWithSpinner({
-          text,
+          // if we are building locally use the default spinner text
+          text: this.localOption
+            ? undefined
+            : 'Indexing to self-hosted data layer',
           database,
           graphQLSchema,
           tinaSchema,

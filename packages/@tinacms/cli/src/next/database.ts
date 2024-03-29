@@ -40,42 +40,49 @@ export const createDBServer = (port: number) => {
   dbServer.listen(port)
 }
 
-export async function createAndInitializeDatabase(
-  configManager: ConfigManager,
-  datalayerPort: number,
+export async function createAndInitializeDatabase({
+  configManager,
+  datalayerPort,
+  bridgeOverride,
+  preview,
+}: {
+  configManager: ConfigManager
+  datalayerPort: number
   bridgeOverride?: Bridge
-) {
+  preview?: boolean
+}) {
   let database: Database
   const bridge =
     bridgeOverride ||
     new FilesystemBridge(configManager.rootPath, configManager.contentRootPath)
-  if (
-    configManager.hasSelfHostedConfig() &&
-    configManager.config.contentApiUrlOverride
-  ) {
-    database = (await configManager.loadDatabaseFile()) as Database
+
+  if (configManager.hasSelfHostedConfig()) {
+    database = preview
+      ? await configManager.loadPreviewDatabaseFile()
+      : await configManager.loadDatabaseFile()
     database.bridge = bridge
-  } else {
-    if (
-      configManager.hasSelfHostedConfig() &&
-      !configManager.config.contentApiUrlOverride
-    ) {
-      logger.warn(
-        `Found a database config file at ${configManager.printRelativePath(
-          configManager.selfHostedDatabaseFilePath
-        )} but there was no "contentApiUrlOverride" set. Falling back to built-in datalayer`
-      )
+    if (configManager.config.contentApiUrlOverride) {
+      return database
     }
-    const level = new TinaLevelClient(datalayerPort)
-    level.openConnection()
-    database = createDatabaseInternal({
-      bridge,
-      level,
-      tinaDirectory: configManager.isUsingLegacyFolder
-        ? LEGACY_TINA_FOLDER
-        : TINA_FOLDER,
-    })
+    logger.warn(
+      `Found a database config file at ${configManager.printRelativePath(
+        preview
+          ? configManager.selfHostedPreviewDatabaseFilePath
+          : configManager.selfHostedDatabaseFilePath
+      )} but there was no "contentApiUrlOverride" set. Falling back to built-in datalayer`
+    )
   }
+
+  const level = new TinaLevelClient(datalayerPort)
+  level.openConnection()
+  database = createDatabaseInternal({
+    namespace: database?.contentNamespace || (preview ? 'preview' : undefined),
+    bridge,
+    level,
+    tinaDirectory: configManager.isUsingLegacyFolder
+      ? LEGACY_TINA_FOLDER
+      : TINA_FOLDER,
+  })
 
   return database
 }

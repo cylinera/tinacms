@@ -58,11 +58,13 @@ export class AuditCommand extends Command {
 
     // Initialize the host TCP server
     createDBServer(Number(this.datalayerPort))
-    const database = await createAndInitializeDatabase(
+    const database = await createAndInitializeDatabase({
       configManager,
-      Number(this.datalayerPort),
-      this.clean ? undefined : new AuditFileSystemBridge(configManager.rootPath)
-    )
+      datalayerPort: Number(this.datalayerPort),
+      bridgeOverride: this.clean
+        ? undefined
+        : new AuditFileSystemBridge(configManager.rootPath),
+    })
     const { tinaSchema, graphQLSchema, lookup } = await buildSchema(
       configManager.config
     )

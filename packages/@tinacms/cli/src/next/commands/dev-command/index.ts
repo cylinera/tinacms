@@ -69,10 +69,10 @@ export class DevCommand extends BaseCommand {
       try {
         await configManager.processConfig()
         if (firstTime) {
-          database = await createAndInitializeDatabase(
+          database = await createAndInitializeDatabase({
             configManager,
-            Number(this.datalayerPort)
-          )
+            datalayerPort: Number(this.datalayerPort),
+          })
         } else {
           database.clearCache()
         }
@@ -124,6 +124,25 @@ export class DevCommand extends BaseCommand {
 
         if (!this.noWatch) {
           this.watchQueries(configManager, async () => await codegen.execute())
+        }
+
+        if (configManager.selfHostedPreviewDatabaseFilePath) {
+          let previewDatabase: Database = null
+          if (firstTime) {
+            previewDatabase = await createAndInitializeDatabase({
+              configManager,
+              datalayerPort: Number(this.datalayerPort),
+              preview: true,
+            })
+          } else {
+            previewDatabase.clearCache()
+          }
+          await this.indexContentWithSpinner({
+            database: previewDatabase,
+            graphQLSchema,
+            tinaSchema,
+            configManager,
+          })
         }
 
         await this.indexContentWithSpinner({

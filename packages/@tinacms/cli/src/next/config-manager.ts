@@ -51,6 +51,7 @@ export class ConfigManager {
   outputHTMLFilePath: string
   outputGitignorePath: string
   selfHostedDatabaseFilePath?: string
+  selfHostedPreviewDatabaseFilePath?: string
   prebuildFilePath?: string
   spaRootPath: string
   spaMainPath: string
@@ -113,6 +114,9 @@ export class ConfigManager {
     }
     this.selfHostedDatabaseFilePath = await this.getPathWithExtension(
       path.join(this.tinaFolderPath, 'database')
+    )
+    this.selfHostedPreviewDatabaseFilePath = await this.getPathWithExtension(
+      path.join(this.tinaFolderPath, 'database-preview')
     )
     this.generatedFolderPath = path.join(this.tinaFolderPath, GENERATED_FOLDER)
 
@@ -364,6 +368,21 @@ export class ConfigManager {
     const outfile = path.join(tmpdir, 'database.build.js')
     await esbuild.build({
       entryPoints: [this.selfHostedDatabaseFilePath],
+      bundle: true,
+      platform: 'node',
+      outfile: outfile,
+      loader: loaders,
+    })
+    const result = require(outfile)
+    fs.removeSync(outfile)
+    return result.default
+  }
+
+  async loadPreviewDatabaseFile() {
+    const tmpdir = path.join(os.tmpdir(), Date.now().toString())
+    const outfile = path.join(tmpdir, 'database.build.js')
+    await esbuild.build({
+      entryPoints: [this.selfHostedPreviewDatabaseFilePath],
       bundle: true,
       platform: 'node',
       outfile: outfile,
