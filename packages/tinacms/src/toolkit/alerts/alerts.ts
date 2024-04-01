@@ -11,6 +11,7 @@ export interface AlertArgs {
   level: AlertLevel
   message: string
   timeout?: number
+  position?: 'top' | 'bottom'
 }
 
 export class Alerts {
@@ -27,9 +28,9 @@ export class Alerts {
         getArgs = () => toAlert
       }
 
-      const { level, message, timeout } = getArgs(event)
+      const { level, message, timeout, position } = getArgs(event)
 
-      this.add(level, message, timeout)
+      this.add(level, message, timeout, position)
     }
   }
 
@@ -46,12 +47,14 @@ export class Alerts {
   add(
     level: AlertLevel,
     message: string | React.FunctionComponent,
-    timeout: number = 4000
+    timeout: number = 4000,
+    position: 'top' | 'bottom' = 'bottom'
   ): () => void {
     const alert = {
       level,
       message,
       timeout,
+      position,
       id: `${message}|${Date.now()}`,
     }
 
@@ -86,17 +89,33 @@ export class Alerts {
     return Array.from(this.alerts.values())
   }
 
-  info(message: string | React.FunctionComponent, timeout?: number) {
-    return this.add('info', message, timeout)
+  info(
+    message: string | React.FunctionComponent,
+    timeout?: number,
+    position?: 'top' | 'bottom'
+  ) {
+    return this.add('info', message, timeout, position)
   }
-  success(message: string | React.FunctionComponent, timeout?: number) {
-    return this.add('success', message, timeout)
+  success(
+    message: string | React.FunctionComponent,
+    timeout?: number,
+    position?: 'top' | 'bottom'
+  ) {
+    return this.add('success', message, timeout, position)
   }
-  warn(message: string | React.FunctionComponent, timeout?: number) {
-    return this.add('warn', message, timeout)
+  warn(
+    message: string | React.FunctionComponent,
+    timeout?: number,
+    position?: 'top' | 'bottom'
+  ) {
+    return this.add('warn', message, timeout, position)
   }
-  error(message: string | React.FunctionComponent, timeout?: number) {
-    return this.add('error', message, timeout)
+  error(
+    message: string | React.FunctionComponent,
+    timeout?: number,
+    position?: 'top' | 'bottom'
+  ) {
+    return this.add('error', message, timeout, position)
   }
 }
 
@@ -107,4 +126,5 @@ export interface Alert {
   level: AlertLevel
   message: string | React.FunctionComponent
   timeout: number
+  position?: 'top' | 'bottom'
 }

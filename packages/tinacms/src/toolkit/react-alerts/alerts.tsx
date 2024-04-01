@@ -22,12 +22,14 @@ export function Alerts({ alerts }: AlertsProps) {
     return null
   }
 
-  return (
-    <>
-      <div className="fixed bottom-0 left-0 right-0 p-6 flex flex-col items-center z-[999999] pointer-events-none">
+  const renderAlerts = (position: 'top' | 'bottom') => {
+    return (
+      <div
+        className={`fixed ${position}-0 left-0 right-0 p-6 flex flex-col items-center z-[999999] pointer-events-none`}
+      >
         {alerts.all
           .filter((alert) => {
-            return alert.level !== 'error'
+            return alert.level !== 'error' && alert.position === position
           })
           .map((alert) => {
             return (
@@ -53,6 +55,13 @@ export function Alerts({ alerts }: AlertsProps) {
             )
           })}
       </div>
+    )
+  }
+
+  return (
+    <>
+      {renderAlerts('top')}
+      {renderAlerts('bottom')}
       {alerts.all
         .filter((alert) => {
           return alert.level === 'error'
