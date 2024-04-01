@@ -279,6 +279,7 @@ export const FormStatus = ({ pristine }) => {
   const [loading, setLoading] = React.useState(false)
   const [submitting, setSubmitting] = React.useState(false)
   const [publishModalOpen, setPublishModalOpen] = React.useState(false)
+  const [discardModalOpen, setDiscardModalOpen] = React.useState(false)
   const [publishData, setPublishData] = React.useState({
     updated: [],
     deleted: [],
@@ -329,6 +330,13 @@ export const FormStatus = ({ pristine }) => {
                 Cancel
               </Button>
               <Button
+                style={{ flexGrow: 2 }}
+                variant="danger"
+                onClick={() => setDiscardModalOpen(true)}
+              >
+                Discard
+              </Button>
+              <Button
                 style={{ flexGrow: 3 }}
                 variant="primary"
                 onClick={async () => {
@@ -336,12 +344,56 @@ export const FormStatus = ({ pristine }) => {
                   setSubmitting(true)
                   try {
                     await fetch('/api/content/publish', { method: 'POST' })
+                    cms.alerts.success('Publish succeeded!', 3000, 'top')
+                  } catch (err) {
+                    cms.alerts.error('Publish failed!')
+                    console.error(err)
                   } finally {
                     setSubmitting(false)
                   }
                 }}
               >
                 Confirm
+              </Button>
+            </ModalActions>
+          </PopupModal>
+        </Modal>
+      )}
+      {discardModalOpen && (
+        <Modal>
+          <PopupModal>
+            <ModalHeader close={() => setDiscardModalOpen(false)}>
+              Discard All Changes
+            </ModalHeader>
+            <ModalBody padded={true}>
+              <p>{`Are you sure you want to discard all changes?`}</p>
+            </ModalBody>
+            <ModalActions>
+              <Button
+                style={{ flexGrow: 2 }}
+                onClick={() => setDiscardModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                style={{ flexGrow: 3 }}
+                variant="danger"
+                onClick={async () => {
+                  setDiscardModalOpen(false)
+                  setPublishModalOpen(false)
+                  setSubmitting(true)
+                  try {
+                    await fetch('/api/content/publish', { method: 'DELETE' })
+                    cms.alerts.success('Changes discarded!', 3000, 'top')
+                  } catch (err) {
+                    cms.alerts.error('Discard changes failed!')
+                    console.error(err)
+                  } finally {
+                    setSubmitting(false)
+                  }
+                }}
+              >
+                Discard
               </Button>
             </ModalActions>
           </PopupModal>
