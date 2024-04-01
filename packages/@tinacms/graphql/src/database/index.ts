@@ -568,6 +568,13 @@ export class Database {
             'put',
             level
           ),
+          ...makeFolderOpsForCollection(
+            folderTreeBuilder.tree,
+            collection,
+            collectionIndexDefinitions,
+            'put',
+            level
+          ),
         ]
 
         const existingItem = await level
