@@ -64,8 +64,12 @@ type IndexStatusEvent = {
   error?: Error
 }
 type IndexStatusCallback = (event: IndexStatusEvent) => Promise<void>
-export type OnPutCallback = (key: string, value: any) => Promise<void>
-export type OnDeleteCallback = (key: string) => Promise<void>
+export type OnPutCallback = (
+  key: string,
+  value: any,
+  options?: any
+) => Promise<void>
+export type OnDeleteCallback = (key: string, options?: any) => Promise<void>
 
 export interface DatabaseArgs {
   bridge?: Bridge
@@ -79,8 +83,8 @@ export interface DatabaseArgs {
 }
 
 export interface GitProvider {
-  onPut: (key: string, value: string) => Promise<void>
-  onDelete: (key: string) => Promise<void>
+  onPut: (key: string, value: string, options?: any) => Promise<void>
+  onDelete: (key: string, options?: any) => Promise<void>
 }
 
 export type CreateDatabase = Omit<
@@ -471,7 +475,8 @@ export class Database {
   public put = async (
     filepath: string,
     data: { [key: string]: unknown },
-    collectionName?: string
+    collectionName?: string,
+    options?: any
   ) => {
     await this.initLevel()
 
@@ -528,7 +533,7 @@ export class Database {
             await this.bridge.put(normalizedPath, stringifiedFile)
           }
           try {
-            await this.onPut(normalizedPath, stringifiedFile)
+            await this.onPut(normalizedPath, stringifiedFile, options)
           } catch (e) {
             // noinspection ExceptionCaughtLocallyJS
             throw new GraphQLError(
@@ -1253,7 +1258,7 @@ export class Database {
     }
   }
 
-  public delete = async (filepath: string) => {
+  public delete = async (filepath: string, options?: any) => {
     await this.initLevel()
     const collection = await this.collectionForPath(filepath)
     if (!collection) {
@@ -1309,7 +1314,7 @@ export class Database {
         await this.bridge.delete(normalizePath(filepath))
       }
       try {
-        await this.onDelete(normalizePath(filepath))
+        await this.onDelete(normalizePath(filepath), options)
       } catch (e) {
         throw new GraphQLError(
           `Error running onDelete hook for ${filepath}: ${e}`,
