@@ -26,7 +26,7 @@ export const isImage = (filename: string): boolean => {
 }
 
 export const isVideo = (filename: string): boolean => {
-  return /\.(mp4|flv)(\?.*)?$/i.test(filename)
+  return /\.(mp4|flv|mov)(\?.*)?$/i.test(filename)
 }
 
 export const absoluteImgURL = (str: string) => {
