@@ -119,29 +119,35 @@ export class BuildCommand extends BaseCommand {
             datalayerPort: Number(this.datalayerPort),
             preview: true,
           })
+          if (
+            !(await previewDatabase.skipIndexing({ graphQLSchema, tinaSchema }))
+          ) {
+            await this.indexContentWithSpinner({
+              // if we are building locally use the default spinner text
+              text: this.localOption
+                ? undefined
+                : 'Indexing to self-hosted preview data layer',
+              database: previewDatabase,
+              graphQLSchema,
+              tinaSchema,
+              configManager,
+              partialReindex: this.partialReindex,
+            })
+          }
+        }
+        if (!(await database.skipIndexing({ graphQLSchema, tinaSchema }))) {
           await this.indexContentWithSpinner({
             // if we are building locally use the default spinner text
             text: this.localOption
               ? undefined
-              : 'Indexing to self-hosted preview data layer',
-            database: previewDatabase,
+              : 'Indexing to self-hosted data layer',
+            database,
             graphQLSchema,
             tinaSchema,
             configManager,
             partialReindex: this.partialReindex,
           })
         }
-        await this.indexContentWithSpinner({
-          // if we are building locally use the default spinner text
-          text: this.localOption
-            ? undefined
-            : 'Indexing to self-hosted data layer',
-          database,
-          graphQLSchema,
-          tinaSchema,
-          configManager,
-          partialReindex: this.partialReindex,
-        })
       } catch (e) {
         logger.error(`\n\n${dangerText(e.message)}\n`)
         if (this.verbose) {

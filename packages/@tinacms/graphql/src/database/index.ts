@@ -71,6 +71,11 @@ export type OnPutCallback = (
 ) => Promise<void>
 export type OnDeleteCallback = (key: string, options?: any) => Promise<void>
 
+type SkipIndexing = (schema: {
+  graphQLSchema: DocumentNode
+  tinaSchema: TinaSchema
+}) => Promise<boolean>
+
 export interface DatabaseArgs {
   bridge?: Bridge
   level: Level
@@ -80,6 +85,7 @@ export interface DatabaseArgs {
   indexStatusCallback?: IndexStatusCallback
   version?: boolean
   namespace?: string
+  skipIndexing?: SkipIndexing
 }
 
 export interface GitProvider {
@@ -206,6 +212,7 @@ export type QueryOptions = {
 const defaultStatusCallback: IndexStatusCallback = () => Promise.resolve()
 const defaultOnPut: OnPutCallback = () => Promise.resolve()
 const defaultOnDelete: OnDeleteCallback = () => Promise.resolve()
+const defaultSkipIndexing: SkipIndexing = () => Promise.resolve(false)
 
 export class Database {
   public bridge?: Bridge
@@ -215,6 +222,7 @@ export class Database {
   public tinaDirectory: string
   public indexStatusCallback: IndexStatusCallback | undefined
   public contentNamespace: string | undefined
+  public skipIndexing: SkipIndexing
   private readonly onPut: OnPutCallback
   private readonly onDelete: OnDeleteCallback
   private tinaSchema: TinaSchema | undefined
@@ -233,6 +241,7 @@ export class Database {
       config.indexStatusCallback || defaultStatusCallback
     this.onPut = config.onPut || defaultOnPut
     this.onDelete = config.onDelete || defaultOnDelete
+    this.skipIndexing = config.skipIndexing || defaultSkipIndexing
     this.contentNamespace = config.namespace
   }
 
