@@ -98,7 +98,7 @@ export type CreateDatabase = Omit<
   'level' | 'onPut' | 'onDelete'
 > & {
   databaseAdapter: Level
-  gitProvider: GitProvider
+  gitProvider?: GitProvider
 
   /**
    * @deprecated Use databaseAdapter instead
@@ -143,24 +143,12 @@ export const createDatabase = (config: CreateDatabase) => {
   if (config.level) {
     console.warn('level is deprecated. Please use databaseAdapter instead.')
   }
-  if (
-    config.onPut &&
-    config.onDelete &&
-    config.level &&
-    !config.databaseAdapter &&
-    !config.gitProvider
-  ) {
+  if (config.level && !config.databaseAdapter) {
     // This is required for backwards compatibility
     return new Database({
       ...config,
       level: config.level,
     })
-  }
-
-  if (!config.gitProvider) {
-    throw new Error(
-      'createDatabase requires a gitProvider. Please provide a gitProvider.'
-    )
   }
 
   if (!config.databaseAdapter) {
@@ -173,8 +161,8 @@ export const createDatabase = (config: CreateDatabase) => {
     ...config,
     bridge: config.bridge,
     level: config.databaseAdapter,
-    onPut: config.gitProvider.onPut.bind(config.gitProvider),
-    onDelete: config.gitProvider.onDelete.bind(config.gitProvider),
+    onPut: config.gitProvider?.onPut.bind(config.gitProvider),
+    onDelete: config.gitProvider?.onDelete.bind(config.gitProvider),
     namespace: config.namespace || 'tinacms',
   })
 }
