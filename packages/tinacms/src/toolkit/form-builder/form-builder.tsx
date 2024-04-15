@@ -343,8 +343,14 @@ export const FormStatus = ({ pristine }) => {
                   setPublishModalOpen(false)
                   setSubmitting(true)
                   try {
-                    await fetch('/api/content/publish', { method: 'POST' })
-                    cms.alerts.success('Publish succeeded!', 3000, 'top')
+                    const resp = await fetch('/api/content/publish', {
+                      method: 'POST',
+                    })
+                    if (resp.ok) {
+                      cms.alerts.success('Publish succeeded!', 3000, 'top')
+                    } else {
+                      cms.alerts.error('Publish failed!')
+                    }
                   } catch (err) {
                     cms.alerts.error('Publish failed!')
                     console.error(err)
