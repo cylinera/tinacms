@@ -510,7 +510,7 @@ export const resolve = async ({
     if (res.errors) {
       if (!silenceErrors) {
         res.errors.map((e) => {
-          if (e instanceof NotFoundError) {
+          if (e.originalError instanceof NotFoundError) {
             // do nothing
           } else {
             console.error(e.toString())
