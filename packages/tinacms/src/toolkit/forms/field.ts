@@ -4,6 +4,7 @@ export interface Field<F extends Field = AnyField> {
   name: string
   label?: string | boolean
   description?: string
+  hidden?: boolean
   component: React.FC<any> | string | null
   inlineComponent?: React.FC<any>
   parse?: (value: any, name: string, field: F) => any

@@ -82,6 +82,7 @@ const Group = ({ tinaForm, form, field, input, meta, index }: GroupProps) => {
       index={index}
       triggerHoverEvents={false}
       tinaForm={tinaForm}
+      field={field}
       actions={
         (!fixedLength || (fixedLength && !isMax)) && (
           <IconButton

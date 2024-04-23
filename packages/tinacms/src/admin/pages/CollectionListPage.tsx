@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, createElement, useEffect, useState } from 'react'
 import {
   BiArrowBack,
   BiCopy,
@@ -326,6 +326,7 @@ const CollectionListPage = () => {
                   collectionDefinition?.ui?.allowedActions?.create ?? true
                 const allowDelete =
                   collectionDefinition?.ui?.allowedActions?.delete ?? true
+                const listActions = collectionDefinition?.ui?.listActions ?? []
 
                 const folderView = folder.fullyQualifiedName !== ''
 
@@ -516,7 +517,15 @@ const CollectionListPage = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="flex self-end	justify-self-end">
+                        <div className="flex self-end	justify-self-end gap-4">
+                          {listActions.map((action, i) =>
+                            createElement(action, {
+                              key: i,
+                              cms: cms,
+                              collection: collectionDefinition,
+                              reFetchCollection,
+                            })
+                          )}
                           {!collection.templates && allowCreate && (
                             <Link
                               to={`/${

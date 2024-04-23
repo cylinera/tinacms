@@ -298,7 +298,7 @@ export function createDatabaseClient<GenQueries = Record<string, unknown>>({
   }) => GenQueries;
   database: Database;
 }) {
-  const request = async ({ query, variables, user }) => {
+  const request = async ({ query, variables, user }: { query: string, variables: any, user?: any }) => {
     const data = await databaseRequest({ query, variables, user, database });
     return {
       data: data.data as any,

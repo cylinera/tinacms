@@ -2,7 +2,7 @@ import * as React from 'react'
 import { FieldProps } from './field-props'
 import { useEvent } from '@toolkit/react-core/use-cms-event'
 import { FieldHoverEvent, FieldFocusEvent } from '@toolkit/fields/field-events'
-import { Form } from '@toolkit/forms'
+import { Form, Field } from '@toolkit/forms'
 
 export type InputFieldType<ExtraFieldProps, InputProps> =
   FieldProps<InputProps> & ExtraFieldProps
@@ -23,6 +23,7 @@ export function wrapFieldsWithMeta<ExtraFieldProps = {}, InputProps = {}>(
         error={props.meta.error}
         index={props.index}
         tinaForm={props.tinaForm}
+        field={props.field}
       >
         <Field {...props} />
       </FieldMeta>
@@ -45,6 +46,7 @@ export function wrapFieldWithError<ExtraFieldProps = {}, InputProps = {}>(
         error={props.meta.error}
         index={props.index}
         tinaForm={props.tinaForm}
+        field={props.field}
       >
         <Field {...props} />
       </FieldMeta>
@@ -61,6 +63,7 @@ interface FieldMetaProps extends React.HTMLAttributes<HTMLElement> {
   margin?: boolean
   index?: number
   tinaForm: Form
+  field: Field
 }
 
 export const FieldMeta = ({
@@ -103,13 +106,16 @@ export const FieldMeta = ({
 }
 
 export const FieldWrapper = ({
+  field,
   margin,
   children,
   ...props
 }: {
+  field: Field
   margin: boolean
   children: React.ReactNode
 } & Partial<React.ComponentPropsWithoutRef<'div'>>) => {
+  if (field.hidden) return null
   return (
     <div className={`relative ${margin ? `mb-5 last:mb-0` : ``}`} {...props}>
       {children}

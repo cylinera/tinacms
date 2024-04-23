@@ -100,6 +100,7 @@ const Blocks = ({
       triggerHoverEvents={false}
       index={index}
       tinaForm={tinaForm}
+      field={field}
       actions={
         (!fixedLength || (fixedLength && !isMax)) &&
         // @ts-ignore

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useEvent } from '@toolkit/react-core/use-cms-event'
 import { FieldHoverEvent, FieldFocusEvent } from '../field-events'
-import { Form } from '@toolkit/forms'
+import { Form, Field } from '@toolkit/forms'
 import {
   FieldDescription,
   FieldError,
@@ -19,6 +19,7 @@ interface FieldMetaProps extends React.HTMLAttributes<HTMLElement> {
   index?: number
   triggerHoverEvents?: boolean
   tinaForm: Form
+  field: Field
 }
 
 export const ListFieldMeta = ({

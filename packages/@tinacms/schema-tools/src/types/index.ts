@@ -152,6 +152,7 @@ export interface BaseField {
   description?: string
   searchable?: boolean
   uid?: boolean
+  hidden?: boolean
 }
 
 export type StringField = (
@@ -865,6 +866,12 @@ export interface UICollection<Form = any, CMS = any, TinaForm = any> {
     cms: CMS
     form: TinaForm
   }) => Promise<void | Record<string, unknown>>
+
+  listActions?: FC<{
+    cms: CMS
+    collection: Collection<true>
+    reFetchCollection: () => void
+  }>[]
 }
 
 export type DefaultItem<ReturnType> = ReturnType | (() => ReturnType)

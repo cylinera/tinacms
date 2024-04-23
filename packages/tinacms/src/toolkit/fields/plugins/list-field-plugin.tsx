@@ -86,6 +86,7 @@ const List = ({ tinaForm, form, field, input, meta, index }: ListProps) => {
       error={meta.error}
       index={index}
       tinaForm={tinaForm}
+      field={field}
       actions={
         (!fixedLength || (fixedLength && !isMax)) && (
           <IconButton onClick={addItem} variant="primary" size="small">

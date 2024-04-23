@@ -26,6 +26,7 @@ function createPlaceholder(name: string, _pr: string) {
         name={props.input.name}
         label={`${name} Field not Registered`}
         tinaForm={props.tinaForm}
+        field={props.field}
       >
         <p className="whitespace-normal text-[15px] mt-2">
           The {name} field is not registered. Some built-in field types are not
