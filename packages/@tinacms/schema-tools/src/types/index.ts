@@ -32,7 +32,7 @@ type Component<Type, List> = (props: {
   meta: Meta
 }) => any
 
-export type UIField<Type, List extends boolean> = {
+export type UIField<Type, List extends boolean> = Record<string, any> & {
   max?: List extends true ? number : never
   min?: List extends true ? number : never
   /**
