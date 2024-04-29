@@ -14,3 +14,13 @@ export class NotFoundError extends GraphQLError {
     this.name = 'NotFoundError'
   }
 }
+
+export class DatabaseInitError extends Error {
+  public type: string
+
+  constructor(type: string, message: string) {
+    super(message)
+    this.name = 'DatabaseInitError'
+    this.type = type
+  }
+}

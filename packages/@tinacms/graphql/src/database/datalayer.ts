@@ -726,7 +726,7 @@ export const makeFolderOpsForCollection = <T extends object>(
             type: opType,
             key: `${collection.path}/${subFolderKey}.${collection.format}`, // replace the root with the collection path
             sublevel: indexSublevel,
-            value: {} as T,
+            value: opType === 'put' ? ({} as T) : undefined,
           })
         } else {
           // generate index value with sort by folderIdx regardless of the index
@@ -737,7 +737,7 @@ export const makeFolderOpsForCollection = <T extends object>(
             type: opType,
             key: `${indexValue}${INDEX_KEY_FIELD_SEPARATOR}${collection.path}/${subFolderKey}.${collection.format}`,
             sublevel: indexSublevel,
-            value: {} as T,
+            value: opType === 'put' ? ({} as T) : undefined,
           })
         }
       }
