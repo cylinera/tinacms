@@ -558,8 +558,8 @@ export const makeFilterSuffixes = (
     let leftSuffix
     let ternaryFilter = false
     if (
-      orderedFilterChain[filterChain.length - 1] &&
-      !orderedFilterChain[filterChain.length - 1].operator
+      orderedFilterChain[indexFields.length - 1] &&
+      !orderedFilterChain[indexFields.length - 1].operator
     ) {
       ternaryFilter = true
     }
