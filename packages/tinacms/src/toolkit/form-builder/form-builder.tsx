@@ -4,7 +4,7 @@ import { Form } from '@toolkit/forms'
 import { Form as FinalForm } from 'react-final-form'
 
 import { DragDropContext, DropResult } from 'react-beautiful-dnd'
-import { Button, OverflowMenu } from '@toolkit/styles'
+import { Button, OverflowMenu, classNames } from '@toolkit/styles'
 import { LoadingDots } from './loading-dots'
 import { FormPortalProvider } from './form-portal'
 import { FieldsBuilder } from './fields-builder'
@@ -29,6 +29,8 @@ export interface FormBuilderProps {
   hideFooter?: boolean
   label?: string
   onPristineChange?: (_pristine: boolean) => unknown
+  className?: string
+  extraButtons?: React.ReactNode[]
 }
 
 interface FormKeyBindingsProps {
@@ -102,10 +104,11 @@ function usePrevious(value) {
 export const FormBuilder: FC<FormBuilderProps> = ({
   form,
   onPristineChange,
-  ...rest
+  hideFooter,
+  className,
+  extraButtons,
 }) => {
   const cms = useCMS()
-  const hideFooter = !!rest.hideFooter
   const [createBranchModalOpen, setCreateBranchModalOpen] =
     React.useState(false)
 
@@ -220,6 +223,7 @@ export const FormBuilder: FC<FormBuilderProps> = ({
                 <FormWrapper
                   header={<PanelHeader {...fieldGroup} id={tinaForm.id} />}
                   id={tinaForm.id}
+                  className={className}
                 >
                   {tinaForm && tinaForm.fields.length ? (
                     <FieldsBuilder
@@ -235,6 +239,7 @@ export const FormBuilder: FC<FormBuilderProps> = ({
               {!hideFooter && (
                 <div className="relative flex-none w-full h-16 px-6 bg-white border-t border-gray-100	flex items-center justify-center">
                   <div className="flex-1 w-full flex justify-between gap-4 items-center max-w-form">
+                    {extraButtons}
                     {tinaForm.reset && (
                       <ResetForm
                         pristine={pristine}
@@ -455,15 +460,20 @@ export const FormWrapper = ({
   header,
   children,
   id,
+  className,
 }: {
   header?: React.ReactNode
   children: React.ReactNode
   id: string
+  className?: string
 }) => {
   return (
     <div
       data-test={`form:${id?.replace(/\\/g, '/')}`}
-      className="h-full overflow-y-auto max-h-full bg-gray-50"
+      className={classNames(
+        'h-full overflow-y-auto max-h-full bg-gray-50',
+        className
+      )}
     >
       {header}
       <div className="py-5 px-6">

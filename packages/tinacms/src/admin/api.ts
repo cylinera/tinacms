@@ -108,7 +108,8 @@ export class TinaAdminApi {
     after?: string,
     sortKey?: string,
     order?: 'asc' | 'desc',
-    filterArgs?: FilterArgs
+    filterArgs?: FilterArgs,
+    limit = 50
   ) {
     let filter = null
     const filterField = filterArgs?.filterField
@@ -200,7 +201,7 @@ export class TinaAdminApi {
                   includeDocuments,
                   folder,
                   sort,
-                  limit: 50,
+                  limit,
                   after,
                   filter,
                 },
@@ -252,7 +253,7 @@ export class TinaAdminApi {
                   includeDocuments,
                   folder,
                   sort,
-                  limit: 50,
+                  limit,
                   after,
                   filter,
                 },

@@ -720,7 +720,10 @@ export const makeFolderOpsForCollection = <T extends object>(
           sort,
           SUBLEVEL_OPTIONS
         )
-        const subFolderKey = sha.hex(path)
+        const subFolderKey = `\x1C_${path
+          .toLowerCase()
+          .split('/')
+          .pop()}_${sha.hex(path)}`
         if (sort === DEFAULT_COLLECTION_SORT_KEY) {
           result.push({
             type: opType,
@@ -747,7 +750,10 @@ export const makeFolderOpsForCollection = <T extends object>(
     if (folderName !== FOLDER_ROOT) {
       result.push({
         type: 'put',
-        key: `${collection.path}/${parentFolderKey}.${collection.format}`,
+        key: `${collection.path}/\x1C_${folderName
+          .toLowerCase()
+          .split('/')
+          .pop()}_${parentFolderKey}.${collection.format}`,
         value: {
           __collection: collection.name,
           __folderBasename: path.basename(folderName),

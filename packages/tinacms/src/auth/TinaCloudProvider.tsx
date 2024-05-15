@@ -403,17 +403,26 @@ export const TinaCloudProvider = (
         props.schema.config?.media?.loadCustomStore || props.mediaStore
       if (mediaStoreFromProps.prototype?.persist) {
         // @ts-ignore
-        cms.media.store = new mediaStoreFromProps(cms.api.tina)
+        cms.media.store = new mediaStoreFromProps(cms)
       } else {
         // This means that an async function was passed in so we will use that to get the class
 
         // @ts-ignore
         const MediaClass = await mediaStoreFromProps()
-        cms.media.store = new MediaClass(cms.api.tina)
+        cms.media.store = new MediaClass(cms)
       }
     } else {
       /** Default MediaStore */
       cms.media.store = new DummyMediaStore()
+    }
+
+    // @ts-ignore
+    let customComponents = props.schema.config?.media?.loadCustomComponents
+    if (customComponents) {
+      if (typeof customComponents === 'function') {
+        customComponents = await customComponents(cms)
+      }
+      cms.media.components = { ...cms.media.components, ...customComponents }
     }
   }
   const client: Client = cms.api.tina

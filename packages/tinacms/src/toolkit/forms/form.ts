@@ -287,9 +287,9 @@ export class Form<S = any, F extends Field = AnyField> implements Plugin {
       const activePath = this.finalForm.getState().active
 
       if (!activePath) {
-        updateEverything<S>(this.finalForm, values)
+        updateEverything<S>(this.finalForm, values, this.fields)
       } else {
-        updateSelectively<S>(this.finalForm, values)
+        updateSelectively<S>(this.finalForm, values, this.fields)
       }
     })
   }
@@ -563,25 +563,34 @@ export class Form<S = any, F extends Field = AnyField> implements Plugin {
   }
 }
 
-function updateEverything<S>(form: FormApi<any>, values: S) {
+function updateEverything<S>(form: FormApi<any>, values: S, fields?: Field[]) {
   Object.entries(values).forEach(([path, value]) => {
-    form.change(path, value)
+    const field = fields?.find((field) => field.name === path)
+    if (!field?.hidden) {
+      form.change(path, value)
+    }
   })
 }
 
-function updateSelectively<S>(form: FormApi<any>, values: S, prefix?: string) {
+function updateSelectively<S>(
+  form: FormApi<any>,
+  values: S,
+  fields?: Field[],
+  prefix?: string
+) {
   const activePath = form.getState().active!
 
   Object.entries(values).forEach(([name, value]) => {
     const path = prefix ? `${prefix}.${name}` : name
+    const field = fields?.find((field) => field.name === path)
 
     if (typeof value === 'object') {
       if (typeof activePath === 'string' && activePath.startsWith(path)) {
-        updateSelectively(form, value, path)
-      } else {
+        updateSelectively(form, value, undefined, path)
+      } else if (!field?.hidden) {
         form.change(path, value)
       }
-    } else if (path !== activePath) {
+    } else if (path !== activePath && !field?.hidden) {
       form.change(path, value)
     }
   })

@@ -14,7 +14,7 @@ export const CopyField = ({ label, description, value }: CopyFieldProps) => {
   return (
     <div className="w-full">
       {label && (
-        <label className="w-full mb-1 block flex-1  text-sm font-bold leading-5 text-gray-700">
+        <label className="w-full mb-1 block flex-1 text-xs font-bold leading-5 text-gray-700">
           {label}
         </label>
       )}

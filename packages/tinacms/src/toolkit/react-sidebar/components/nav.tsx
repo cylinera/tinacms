@@ -15,6 +15,7 @@ interface NavCollection {
   label?: string
   name: string
   isAuthCollection?: boolean
+  hidden?: boolean
 }
 
 interface NavProps {
@@ -70,7 +71,7 @@ export const Nav = ({
       ) => {
         if (collection.isAuthCollection) {
           acc.authCollection = collection
-        } else {
+        } else if (!collection.hidden) {
           acc.contentCollections.push(collection)
         }
         return acc

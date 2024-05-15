@@ -2,6 +2,7 @@ export type AnyField = Field & { [key: string]: any }
 
 export interface Field<F extends Field = AnyField> {
   name: string
+  type?: string
   label?: string | boolean
   description?: string
   hidden?: boolean

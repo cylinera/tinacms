@@ -334,7 +334,11 @@ export const resolve = async ({
                 /**
                  * This is a reference value (`director: /path/to/george.md`)
                  */
-                return resolver.getDocument(value)
+                let id: string = value
+                try {
+                  id = JSON.parse(value).id
+                } catch (e) {}
+                return resolver.getDocument(id)
               }
               if (
                 args &&

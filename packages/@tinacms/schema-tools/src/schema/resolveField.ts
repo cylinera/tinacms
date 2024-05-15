@@ -182,8 +182,9 @@ export const resolveField = (
       }
     case 'reference':
       return {
-        ...field,
         component: 'reference',
+        clearable: true,
+        ...field,
         ...extraFields,
       }
     default:

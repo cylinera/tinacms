@@ -3,7 +3,6 @@ import { wrapFieldsWithMeta } from './wrap-field-with-meta'
 import { InputProps, ImageUpload } from '../components'
 import { Media } from '@toolkit/core'
 import { useCMS } from '@toolkit/react-core'
-import { parse } from './text-format'
 import { useState } from 'react'
 import { FileError } from 'react-dropzone'
 
@@ -18,7 +17,7 @@ export const ImageField = wrapFieldsWithMeta<InputProps, ImageProps>(
     const ref = React.useRef(null)
     const cms = useCMS()
     const { value } = props.input
-    const src = value
+    const src = value?.src
     const [isImgUploading, setIsImgUploading] = useState(false)
     let onClear: any
     if (props.field.clearable) {
@@ -31,17 +30,8 @@ export const ImageField = wrapFieldsWithMeta<InputProps, ImageProps>(
       }
     }, [props.field.experimental_focusIntent, ref])
 
-    async function onChange(media?: Media | Media[]) {
-      if (media) {
-        const parsedValue =
-          // @ts-ignore
-          typeof cms?.media?.store?.parse === 'function'
-            ? // @ts-ignore
-              cms.media.store.parse(media)
-            : media
-
-        props.input.onChange(parsedValue)
-      }
+    async function onChange(media: Media) {
+      props.input.onChange({ id: media.id, src: media.src })
     }
     const uploadDir =
       props.field.uploadDir ||
@@ -137,7 +127,22 @@ export const ImageField = wrapFieldsWithMeta<InputProps, ImageProps>(
 export const ImageFieldPlugin = {
   name: 'image',
   Component: ImageField,
-  parse,
+  parse: (value, name, field) => {
+    if (field.type === 'reference') {
+      return value ? JSON.stringify(value) : ''
+    } else {
+      return value.src
+    }
+  },
+  format: (value, name, field) => {
+    if (field.type === 'reference') {
+      return value ? JSON.parse(value) : null
+    } else if (value) {
+      return { id: value, src: value }
+    } else {
+      return null
+    }
+  },
   validate(value: any, values: any, meta: any, field: any) {
     if (field.required && !value) return 'Required'
   },

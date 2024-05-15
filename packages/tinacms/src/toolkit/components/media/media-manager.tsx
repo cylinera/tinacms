@@ -1,5 +1,4 @@
-import React from 'react'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState, createElement } from 'react'
 import { useCMS } from '../../react-tinacms/use-cms'
 import {
   BiArrowToBottom,
@@ -25,7 +24,7 @@ import type { FileError } from 'react-dropzone'
 import { CursorPaginator } from './pagination'
 import { ListMediaItem, GridMediaItem } from './media-item'
 import { Breadcrumb } from './breadcrumb'
-import { LoadingDots } from '@toolkit/form-builder'
+import { FormBuilder, LoadingDots } from '@toolkit/form-builder'
 import { IoMdRefresh } from 'react-icons/io'
 import { CloseIcon, TrashIcon } from '@toolkit/icons'
 import {
@@ -38,6 +37,12 @@ import {
 import { DeleteModal, NewFolderModal } from './modal'
 import { CopyField } from './copy-field'
 import { createContext, useContext } from 'react'
+import type { TinaCMS } from '@tinacms/toolkit'
+import { resolveForm } from '@tinacms/schema-tools'
+import { Form, LocalWarning } from '@tinacms/toolkit'
+import GetDocument from '../../../admin/components/GetDocument'
+import { ErrorDialog } from '../../../admin/components/ErrorDialog'
+import { TinaAdminApi } from '../../../admin/api'
 const { useDropzone } = dropzone
 // Can not use path.join on the frontend
 const join = function (...parts) {
@@ -341,6 +346,10 @@ export function MediaPicker({
     return <DocsLink title={title} message={message} docsLink={docsLink} />
   }
 
+  const collection =
+    cms.media.store.collection &&
+    cms.api.tina.schema.getCollection(cms.media.store.collection)
+
   return (
     <>
       {deleteModalOpen && (
@@ -381,6 +390,14 @@ export function MediaPicker({
 
             {cms.media.store.isStatic ? null : (
               <div className="flex flex-wrap items-center gap-4">
+                {collection?.ui?.listActions?.map((action, i) =>
+                  createElement(action, {
+                    key: i,
+                    cms: cms,
+                    collection,
+                    reFetchCollection: loadMedia,
+                  })
+                )}
                 <Button
                   busy={false}
                   variant="white"
@@ -481,85 +498,284 @@ const ActiveItemPreview = ({
   allowDelete,
 }) => {
   const thumbnail = activeItem ? (activeItem.thumbnails || {})['1000x1000'] : ''
+  const cms = useCMS()
+  const collectionName = cms.media.store.collection
+
+  if (!collectionName) {
+    return (
+      <div
+        className={`shrink-0 h-full flex flex-col items-start gap-3 overflow-y-auto bg-white border-l border-gray-100 bg-white shadow-md transition ease-out duration-150 ${
+          activeItem
+            ? `p-4 opacity-100 w-[35%] max-w-[560px] min-w-[240px]`
+            : `translate-x-8 opacity-0 w-[0px]`
+        }`}
+      >
+        {activeItem && (
+          <>
+            <div className="flex grow-0 shrink-0 gap-2 w-full items-center justify-between">
+              <h3 className="text-lg text-gray-600 w-full max-w-full break-words block truncate flex-1">
+                {activeItem.filename}
+              </h3>
+              <IconButton
+                variant="ghost"
+                className="group grow-0 shrink-0"
+                onClick={close}
+              >
+                <BiX
+                  className={`w-7 h-auto text-gray-500 opacity-50 group-hover:opacity-100 transition duration-150 ease-out`}
+                />
+              </IconButton>
+            </div>
+            {isImage(thumbnail) ? (
+              <div className="w-full max-h-[75%]">
+                <img
+                  className="block border border-gray-100 rounded-md overflow-hidden object-center object-contain max-w-full max-h-full m-auto shadow"
+                  src={thumbnail}
+                  alt={activeItem.filename}
+                />
+              </div>
+            ) : isVideo(thumbnail) ? (
+              <div className="w-full max-h-[75%]">
+                <video
+                  className="block border border-gray-100 rounded-md overflow-hidden object-center object-contain max-w-full max-h-full m-auto shadow"
+                  src={thumbnail}
+                  muted
+                  autoPlay
+                  loop
+                />
+              </div>
+            ) : (
+              <span className="p-3 border border-gray-100 rounded-md overflow-hidden bg-gray-50 shadow">
+                <BiFile className="w-14 h-auto fill-gray-300" />
+              </span>
+            )}
+            <div className="grow h-full w-full shrink flex flex-col gap-3 items-start justify-start">
+              <CopyField value={absoluteImgURL(activeItem.src)} label="URL" />
+            </div>
+            <div className="shrink-0 w-full flex flex-col justify-end items-start">
+              <div className="flex w-full gap-3">
+                {selectMediaItem && (
+                  <Button
+                    size="medium"
+                    variant="primary"
+                    className="grow"
+                    onClick={() => selectMediaItem(activeItem)}
+                  >
+                    Insert
+                    <BiArrowToBottom className="ml-1 -mr-0.5 w-6 h-auto text-white opacity-70" />
+                  </Button>
+                )}
+                {allowDelete && (
+                  <Button
+                    variant="white"
+                    size="medium"
+                    className="grow max-w-[40%]"
+                    onClick={deleteMediaItem}
+                  >
+                    Delete
+                    <TrashIcon className="ml-1 -mr-0.5 w-6 h-auto text-red-500 opacity-70" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    )
+  }
+
+  const MediaPreview = cms.media.components.preview
+  const collection = cms.api.tina.schema.getCollection(collectionName)
+  const relativePath = activeItem
+    ? activeItem.id.replace(new RegExp(`^${collection.path}/?`), '')
+    : ''
+
   return (
     <div
-      className={`shrink-0 h-full flex flex-col items-start gap-3 overflow-y-auto bg-white border-l border-gray-100 bg-white shadow-md transition ease-out duration-150 ${
+      className={`shrink-0 h-full flex flex-col items-start overflow-y-auto bg-white border-l border-gray-100 bg-white shadow-md transition ease-out duration-150 ${
         activeItem
-          ? `p-4 opacity-100 w-[35%] max-w-[560px] min-w-[240px]`
+          ? `opacity-100 w-[35%] max-w-[560px] min-w-[240px]`
           : `translate-x-8 opacity-0 w-[0px]`
       }`}
     >
       {activeItem && (
-        <>
-          <div className="flex grow-0 shrink-0 gap-2 w-full items-center justify-between">
-            <h3 className="text-lg text-gray-600 w-full max-w-full break-words block truncate flex-1">
-              {activeItem.filename}
-            </h3>
-            <IconButton
-              variant="ghost"
-              className="group grow-0 shrink-0"
-              onClick={close}
-            >
-              <BiX
-                className={`w-7 h-auto text-gray-500 opacity-50 group-hover:opacity-100 transition duration-150 ease-out`}
-              />
-            </IconButton>
-          </div>
-          {isImage(thumbnail) ? (
-            <div className="w-full max-h-[75%]">
-              <img
-                className="block border border-gray-100 rounded-md overflow-hidden object-center object-contain max-w-full max-h-full m-auto shadow"
-                src={thumbnail}
-                alt={activeItem.filename}
-              />
-            </div>
-          ) : isVideo(thumbnail) ? (
-            <div className="w-full max-h-[75%]">
-              <video
-                className="block border border-gray-100 rounded-md overflow-hidden object-center object-contain max-w-full max-h-full m-auto shadow"
-                src={thumbnail}
-                muted
-                autoPlay
-                loop
-              />
-            </div>
-          ) : (
-            <span className="p-3 border border-gray-100 rounded-md overflow-hidden bg-gray-50 shadow">
-              <BiFile className="w-14 h-auto fill-gray-300" />
-            </span>
+        <GetDocument
+          cms={cms}
+          collectionName={collectionName}
+          relativePath={relativePath}
+        >
+          {(document) => (
+            <ActiveItemForm
+              cms={cms}
+              document={document}
+              filename={activeItem.filename}
+              relativePath={relativePath}
+              collection={collection}
+              onClose={close}
+              previewContent={(form: Form) => (
+                <MediaPreview media={activeItem} form={form} />
+              )}
+              extraButtons={[
+                selectMediaItem && (
+                  <Button
+                    key="insert"
+                    size="medium"
+                    variant="primary"
+                    className="grow"
+                    onClick={() => selectMediaItem(activeItem)}
+                  >
+                    Insert
+                    <BiArrowToBottom className="ml-1 -mr-0.5 w-6 h-auto text-white opacity-70" />
+                  </Button>
+                ),
+                allowDelete && (
+                  <Button
+                    key="delete"
+                    variant="white"
+                    size="medium"
+                    className="grow max-w-[40%]"
+                    onClick={deleteMediaItem}
+                  >
+                    Delete
+                    <TrashIcon className="ml-1 -mr-0.5 w-6 h-auto text-red-500 opacity-70" />
+                  </Button>
+                ),
+              ].filter(Boolean)}
+            />
           )}
-          <div className="grow h-full w-full shrink flex flex-col gap-3 items-start justify-start">
-            <CopyField value={absoluteImgURL(activeItem.src)} label="URL" />
-          </div>
-          <div className="shrink-0 w-full flex flex-col justify-end items-start">
-            <div className="flex w-full gap-3">
-              {selectMediaItem && (
-                <Button
-                  size="medium"
-                  variant="primary"
-                  className="grow"
-                  onClick={() => selectMediaItem(activeItem)}
-                >
-                  Insert
-                  <BiArrowToBottom className="ml-1 -mr-0.5 w-6 h-auto text-white opacity-70" />
-                </Button>
-              )}
-              {allowDelete && (
-                <Button
-                  variant="white"
-                  size="medium"
-                  className="grow max-w-[40%]"
-                  onClick={deleteMediaItem}
-                >
-                  Delete
-                  <TrashIcon className="ml-1 -mr-0.5 w-6 h-auto text-red-500 opacity-70" />
-                </Button>
-              )}
-            </div>
-          </div>
-        </>
+        </GetDocument>
       )}
     </div>
+  )
+}
+
+const ActiveItemFormStatus = ({ filename, pristine, onClose }) => {
+  return (
+    <div className="flex grow-0 shrink-0 gap-2 w-full items-center justify-between">
+      <h3 className="text-lg text-gray-600 w-full max-w-full break-words block truncate flex-1">
+        {filename}
+      </h3>
+      {!pristine && (
+        <>
+          <span className="w-3 h-3 flex-0 rounded-full bg-yellow-300 border border-yellow-400 mr-2"></span>{' '}
+          <p className="text-gray-500 text-xs leading-tight whitespace-nowrap">
+            Unsaved Changes
+          </p>
+        </>
+      )}
+      {pristine && (
+        <>
+          <span className="w-3 h-3 flex-0 rounded-full bg-green-300 border border-green-400 mr-2"></span>{' '}
+          <p className="text-gray-500 text-xs leading-tight whitespace-nowrap">
+            No Changes
+          </p>
+        </>
+      )}
+      <IconButton
+        variant="ghost"
+        className="group grow-0 shrink-0"
+        onClick={onClose}
+      >
+        <BiX
+          className={`w-7 h-auto text-gray-500 opacity-50 group-hover:opacity-100 transition duration-150 ease-out`}
+        />
+      </IconButton>
+    </div>
+  )
+}
+
+const ActiveItemForm = ({
+  cms,
+  document,
+  filename,
+  relativePath,
+  collection,
+  previewContent,
+  extraButtons,
+  onClose,
+}: {
+  cms: TinaCMS
+  document
+  filename
+  relativePath
+  collection
+  previewContent
+  extraButtons
+  onClose
+}) => {
+  const [formIsPristine, setFormIsPristine] = useState(true)
+  const id = `${collection.path}/${relativePath}`
+  const form = cms.state.forms.find(({ tinaForm }) => tinaForm.id === id)
+
+  useEffect(() => {
+    const schema = cms.api.tina.schema
+    const formInfo = resolveForm({
+      collection,
+      schema,
+      basename: collection.name,
+      template: schema.getTemplateForData({
+        collection,
+        data: document._values,
+      }),
+    })
+    const form = new Form({
+      id,
+      label: 'media-form',
+      fields: formInfo.fields as any,
+      initialValues: document._values,
+      onSubmit: async (values) => {
+        try {
+          const api = new TinaAdminApi(cms)
+          const params = api.schema.transformPayload(collection.name, values)
+          if (await api.isAuthenticated()) {
+            await api.updateDocument(collection, relativePath, params)
+            cms.alerts.success('Media updated!')
+          } else {
+            const authMessage = `Update media failed: User is no longer authenticated; please login and try again.`
+            cms.alerts.error(authMessage)
+            console.error(authMessage)
+          }
+        } catch (error) {
+          cms.alerts.error(() =>
+            ErrorDialog({
+              title: 'There was a problem saving your document',
+              message: 'Tina caught an error while updating the page',
+              error,
+            })
+          )
+          console.error(error)
+          throw new Error(
+            `[${error.name}] UpdateDocument failed: ${error.message}`
+          )
+        }
+      },
+    })
+    cms.dispatch({ type: 'forms:add', value: form })
+    return () => {
+      cms.dispatch({ type: 'forms:remove', value: id })
+    }
+  }, [id])
+
+  if (!form) return null
+
+  return (
+    <>
+      {cms?.api?.tina?.isLocalMode && <LocalWarning />}
+      <div className="pt-3 pb-4 border-b border-gray-200 bg-white w-full grow-0 shrink basis-0 flex justify-end px-6">
+        <ActiveItemFormStatus
+          filename={filename}
+          pristine={formIsPristine}
+          onClose={onClose}
+        />
+      </div>
+      {previewContent(form.tinaForm)}
+      <FormBuilder
+        className="bg-white"
+        form={form}
+        onPristineChange={setFormIsPristine}
+        extraButtons={extraButtons}
+      />
+    </>
   )
 }
 

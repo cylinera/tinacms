@@ -631,6 +631,9 @@ export interface Config<
          * ```
          */
         loadCustomStore: () => Promise<Store>
+        loadCustomComponents: () => Promise<{
+          preview: (props: any) => JSX.Element
+        }>
         tina?: never
       }
     | {
@@ -757,6 +760,7 @@ interface BaseCollection {
   }
   isDetached?: boolean
   isAuthCollection?: boolean
+  hidden?: boolean
 }
 
 type TemplateCollection<WithNamespace extends boolean = false> = {

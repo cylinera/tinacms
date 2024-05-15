@@ -329,12 +329,16 @@ export const useGraphQLReducer = (
             let resolvedDocument: ResolvedDocument
             // This is a reference from another form
             if (typeof value === 'string') {
+              let id = value
+              try {
+                id = JSON.parse(value).id
+              } catch (e) {}
               const valueFromSetup = getIn(
                 expandedData,
                 G.responsePathAsArray(info.path).join('.')
               )
               const maybeResolvedDocument = resolvedDocuments.find(
-                (doc) => doc._internalSys.path === value
+                (doc) => doc._internalSys.path === id
               )
               // If we already have this document, use it.
               if (maybeResolvedDocument) {
@@ -346,13 +350,13 @@ export const useGraphQLReducer = (
                 // here and just grab it from the response
                 const maybeResolvedDocument =
                   documentSchema.parse(valueFromSetup)
-                if (maybeResolvedDocument._internalSys.path === value) {
+                if (maybeResolvedDocument._internalSys.path === id) {
                   resolvedDocument = maybeResolvedDocument
                 } else {
-                  throw new NoFormError(`No form found`, value)
+                  throw new NoFormError(`No form found`, id)
                 }
               } else {
-                throw new NoFormError(`No form found`, value)
+                throw new NoFormError(`No form found`, id)
               }
             } else {
               resolvedDocument = documentSchema.parse(value)

@@ -1,3 +1,5 @@
+import { Form } from '..'
+import DefaultMediaPreview from '../components/media/default-media-preview'
 import { EventBus } from './event'
 import { DummyMediaStore } from './media-store.default'
 
@@ -78,6 +80,11 @@ export interface MediaStore {
    * @default false
    */
   isStatic?: boolean
+
+  /**
+   * Which collection to use for the media metadata
+   */
+  collection?: string
 }
 
 export declare type MediaListOffset = string | number
@@ -115,6 +122,12 @@ export interface MediaList {
  */
 export class MediaManager implements MediaStore {
   private _pageSize: number = 36
+
+  public components: {
+    preview: (props: { media: Media; form?: Form }) => JSX.Element
+  } = {
+    preview: DefaultMediaPreview,
+  }
 
   constructor(public store: MediaStore, private events: EventBus) {}
 

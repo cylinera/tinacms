@@ -380,10 +380,6 @@ export class TinaMediaStore implements MediaStore {
     }
   }
 
-  parse = (img) => {
-    return img.src
-  }
-
   async delete(media: Media) {
     const path = `${
       media.directory ? `${media.directory}/${media.filename}` : media.filename
