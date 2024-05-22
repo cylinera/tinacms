@@ -338,7 +338,14 @@ export const resolve = async ({
                 try {
                   id = JSON.parse(value).id
                 } catch (e) {}
-                return resolver.getDocument(id)
+                try {
+                  return await resolver.getDocument(id)
+                } catch (e) {
+                  if (e instanceof NotFoundError) {
+                    return null
+                  }
+                  throw e
+                }
               }
               if (
                 args &&
