@@ -128,7 +128,7 @@ export const ImageFieldPlugin = {
   name: 'image',
   Component: ImageField,
   parse: (value, name, field) => {
-    if (field.type === 'reference') {
+    if (field.type === 'reference' || field.mode === 'compat') {
       return value ? JSON.stringify(value) : ''
     } else {
       return value.src
@@ -137,6 +137,13 @@ export const ImageFieldPlugin = {
   format: (value, name, field) => {
     if (field.type === 'reference') {
       return value ? JSON.parse(value) : null
+    } else if (field.mode === 'compat') {
+      if (!value) return null
+      try {
+        return JSON.parse(value)
+      } catch (e) {
+        return { id: value, src: value }
+      }
     } else if (value) {
       return { id: value, src: value }
     } else {
