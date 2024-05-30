@@ -9,6 +9,7 @@ const supportedFileTypes = [
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'image/*',
+  'video/*',
 ]
 export const DEFAULT_MEDIA_UPLOAD_TYPES = supportedFileTypes.join(',')
 
@@ -26,7 +27,7 @@ export const isImage = (filename: string): boolean => {
 }
 
 export const isVideo = (filename: string): boolean => {
-  return /\.(mp4|flv|mov)(\?.*)?$/i.test(filename)
+  return /\.(mp4|ogg|ogv|webm|mov|m4v)(\?.*)?$/i.test(filename)
 }
 
 export const absoluteImgURL = (str: string) => {
