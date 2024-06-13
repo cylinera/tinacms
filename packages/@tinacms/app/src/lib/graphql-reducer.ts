@@ -337,6 +337,9 @@ export const useGraphQLReducer = (
                 expandedData,
                 G.responsePathAsArray(info.path).join('.')
               )
+              if (valueFromSetup === null) {
+                return
+              }
               const maybeResolvedDocument = resolvedDocuments.find(
                 (doc) => doc._internalSys.path === id
               )
