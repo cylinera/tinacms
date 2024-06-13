@@ -56,6 +56,7 @@ export const ImageField = wrapFieldsWithMeta<InputProps, ImageProps>(
           cms.media.open({
             allowDelete: true,
             directory,
+            id: value?.id,
             onSelect: onChange,
           })
         }}

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { forwardRef } from 'react'
 import { Media } from '@toolkit/core'
 import { BiFolder, BiFile } from 'react-icons/bi'
 import { isImage, isVideo } from './utils'
@@ -9,11 +9,15 @@ interface MediaItemProps {
   active: boolean
 }
 
-export function ListMediaItem({ item, onClick, active }: MediaItemProps) {
+export const ListMediaItem = forwardRef(function (
+  { item, onClick, active }: MediaItemProps,
+  ref: React.Ref<HTMLLIElement>
+) {
   const FileIcon = item.type === 'dir' ? BiFolder : BiFile
   const thumbnail = (item.thumbnails || {})['75x75']
   return (
     <li
+      ref={ref}
       className={`group relative flex shrink-0 items-center transition duration-150 ease-out cursor-pointer border-b border-gray-150 ${
         active
           ? 'bg-gradient-to-r from-white to-gray-50/50 text-blue-500 hover:bg-gray-50'
@@ -58,13 +62,17 @@ export function ListMediaItem({ item, onClick, active }: MediaItemProps) {
       </span>
     </li>
   )
-}
+})
 
-export function GridMediaItem({ item, active, onClick }: MediaItemProps) {
+export const GridMediaItem = forwardRef(function (
+  { item, active, onClick }: MediaItemProps,
+  ref: React.Ref<HTMLLIElement>
+) {
   const FileIcon = item.type === 'dir' ? BiFolder : BiFile
   const thumbnail = (item.thumbnails || {})['400x400']
   return (
     <li
+      ref={ref}
       className={`relative pb-[100%] h-0 block border border-gray-100 rounded-md overflow-hidden flex justify-center shrink-0 w-full transition duration-150 ease-out ${
         active
           ? 'shadow-outline'
@@ -111,4 +119,4 @@ export function GridMediaItem({ item, active, onClick }: MediaItemProps) {
       </button>
     </li>
   )
-}
+})

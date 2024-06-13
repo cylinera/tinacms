@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createElement } from 'react'
+import React, { useEffect, useState, createElement, useRef } from 'react'
 import { useCMS } from '../../react-tinacms/use-cms'
 import {
   BiArrowToBottom,
@@ -72,6 +72,7 @@ const join = function (...parts) {
 
 export interface MediaRequest {
   directory?: string
+  id?: string
   onSelect?(_media: Media): void
   close?(): void
   allowDelete?: boolean
@@ -197,8 +198,67 @@ export function MediaPicker({
       })
   }
 
+  async function loadInitMedia() {
+    setListState('loading')
+
+    const offsets: MediaListOffset[] = []
+    let activeItem: Media
+    let list: MediaList
+
+    try {
+      while (true) {
+        list = await cms.media.list({
+          offset: offsets[offsets.length - 1],
+          limit: cms.media.pageSize,
+          directory: props.directory,
+          thumbnailSizes: [
+            { w: 75, h: 75 },
+            { w: 400, h: 400 },
+            { w: 1000, h: 1000 },
+          ],
+        })
+        activeItem = list.items.find((item) => item.id === props.id)
+        if (activeItem || list.items.length === 0 || !list.nextOffset) {
+          break
+        }
+        offsets.push(list.nextOffset)
+      }
+      setOffsetHistory(offsets)
+      setList(list)
+      setActiveItem(activeItem || false)
+      setDirectory(props.directory)
+      setListState('loaded')
+    } catch (e) {
+      console.error(e)
+      if (e.ERR_TYPE === 'MediaListError') {
+        setListError(e)
+      } else {
+        setListError(defaultListError)
+      }
+      setListState('error')
+    }
+  }
+
+  const initRef = useRef(false)
+  const activeItemRef = useRef<HTMLLIElement>()
+
   useEffect(() => {
-    if (!cms.media.isConfigured) return
+    if (props.id) {
+      initRef.current = true
+      loadInitMedia().then(() => {
+        initRef.current = false
+        if (activeItemRef.current) {
+          activeItemRef.current.scrollIntoView({ block: 'center' })
+        }
+      })
+    }
+    return () => {
+      initRef.current = false
+    }
+  }, [props.id])
+
+  useEffect(() => {
+    if (!cms.media.isConfigured || initRef.current) return
     loadMedia()
 
     return cms.events.subscribe(
@@ -450,6 +510,11 @@ export function MediaPicker({
                       item={item}
                       onClick={onClickMediaItem}
                       active={activeItem && activeItem.id === item.id}
+                      ref={
+                        activeItem && activeItem.id === item.id
+                          ? activeItemRef
+                          : undefined
+                      }
                     />
                   ))}
 
@@ -460,6 +525,11 @@ export function MediaPicker({
                       item={item}
                       onClick={onClickMediaItem}
                       active={activeItem && activeItem.id === item.id}
+                      ref={
+                        activeItem && activeItem.id === item.id
+                          ? activeItemRef
+                          : undefined
+                      }
                     />
                   ))}
               </ul>
